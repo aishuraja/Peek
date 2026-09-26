@@ -11,6 +11,7 @@ struct RevealExperienceView: View {
     @State private var phase: Phase = .preparing
     @State private var didFinish = false
     @State private var showReplay = false
+    @State private var ambientGlow = false
     private var progress: Double { posture.revealProgress }
 
     var body: some View {
@@ -19,6 +20,11 @@ struct RevealExperienceView: View {
             if phase == .result { resultView } else { revealStage }
         }
         .task { await prepareAndStart() }
+        .onAppear {
+            withAnimation(.easeInOut(duration: 2.4).repeatForever(autoreverses: true)) {
+                ambientGlow = true
+            }
+        }
         .onChange(of: posture.posture) { old, new in
             guard phase == .revealing else { return }
             if new == .partiallyOpen && old == .closed { UIImpactFeedbackGenerator(style: .soft).impactOccurred() }
@@ -31,11 +37,20 @@ struct RevealExperienceView: View {
     private var revealStage: some View {
         GeometryReader { proxy in
             ZStack {
+                revealBackdrop
+
+                invitation
+                    .opacity(max(0, 1 - progress * 2.4))
+                    .scaleEffect(1 - progress * 0.08)
+
                 reactionPreview
-                    .frame(width: progress > 0.22 ? 94 : proxy.size.width, height: progress > 0.22 ? 126 : proxy.size.height)
-                    .clipShape(RoundedRectangle(cornerRadius: progress > 0.22 ? 28 : 0, style: .continuous))
-                    .overlay(RoundedRectangle(cornerRadius: 28).stroke(.white.opacity(progress > 0.22 ? 0.16 : 0)))
-                    .offset(x: progress > 0.22 ? proxy.size.width * 0.34 : 0, y: progress > 0.22 ? -proxy.size.height * 0.28 : 0).zIndex(2)
+                    .frame(width: 94, height: 126)
+                    .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+                    .overlay(RoundedRectangle(cornerRadius: 28).stroke(.white.opacity(0.16)))
+                    .offset(x: proxy.size.width * 0.34, y: -proxy.size.height * 0.28)
+                    .opacity(progress > 0.1 ? 1 : 0)
+                    .scaleEffect(progress > 0.1 ? 1 : 0.8)
+                    .zIndex(2)
                 DemoPhoto(name: peek.imageName)
                     .frame(width: proxy.size.width - 28, height: min(proxy.size.height * 0.67, 590))
                     .clipShape(RoundedRectangle(cornerRadius: 32, style: .continuous))
@@ -50,14 +65,114 @@ struct RevealExperienceView: View {
                         Spacer()
                         Label(capture.isRecording ? "REC" : "READY", systemImage: "circle.fill").font(.caption.bold())
                             .foregroundStyle(capture.isRecording ? Color.peekPink : .secondary).padding(.horizontal, 13).padding(.vertical, 9).background(.ultraThinMaterial, in: Capsule())
+                            .opacity(progress > 0.1 ? 1 : 0)
                     }
-                    Spacer(); instruction
-                    #if targetEnvironment(simulator)
-                    if !posture.hasRealHinge && phase == .revealing { demoControl }
-                    #endif
+                    Spacer()
+                    if progress > 0.08 { instruction }
                 }.padding(20)
             }
         }.animation(.spring(response: 0.5, dampingFraction: 0.84), value: progress)
+    }
+
+    private var revealBackdrop: some View {
+        ZStack {
+            LinearGradient(
+                colors: [Color(hex: "05050A"), Color(hex: "10091A"), Color(hex: "050817")],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+
+            RadialGradient(
+                colors: [Color.peekPink.opacity(ambientGlow ? 0.38 : 0.2), .clear],
+                center: UnitPoint(x: 0.83, y: 0.36),
+                startRadius: 8,
+                endRadius: ambientGlow ? 330 : 255
+            )
+
+            RadialGradient(
+                colors: [Color(hex: "526BFF").opacity(ambientGlow ? 0.35 : 0.18), .clear],
+                center: UnitPoint(x: 0.72, y: 0.88),
+                startRadius: 12,
+                endRadius: 290
+            )
+
+            NeonHorizon()
+                .fill(
+                    LinearGradient(
+                        colors: [Color.peekPink.opacity(0.75), Color(hex: "9B55FF").opacity(0.55), Color(hex: "22316D").opacity(0.25)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .overlay(alignment: .top) {
+                    NeonHorizon()
+                        .stroke(
+                            LinearGradient(colors: [.white, Color.peekPink, Color(hex: "728BFF")], startPoint: .leading, endPoint: .trailing),
+                            lineWidth: 2.5
+                        )
+                        .shadow(color: Color.peekPink, radius: ambientGlow ? 22 : 12)
+                }
+                .offset(y: 42)
+        }
+        .ignoresSafeArea()
+    }
+
+    private var invitation: some View {
+        VStack(spacing: 0) {
+            Spacer(minLength: 108)
+
+            RevealOrb(glowing: ambientGlow)
+                .frame(width: 190, height: 190)
+
+            Spacer(minLength: 55)
+
+            VStack(spacing: 10) {
+                Text("Unfold to reveal")
+                    .font(.system(size: 38, weight: .bold, design: .rounded))
+                    .foregroundStyle(
+                        LinearGradient(colors: [.white, Color(hex: "FF83C4"), Color(hex: "839CFF")], startPoint: .leading, endPoint: .trailing)
+                    )
+                Text("The reveal follows your iPhone Duo.")
+                    .font(.system(size: 17, weight: .medium, design: .rounded))
+                    .foregroundStyle(.white.opacity(0.58))
+            }
+            .multilineTextAlignment(.center)
+
+            Spacer(minLength: 28)
+
+            Text(posture.hasRealHinge ? "READY FOR YOUR REACTION" : "SIMULATED REACTION")
+                .font(.caption2.weight(.semibold))
+                .tracking(3.2)
+                .foregroundStyle(.white.opacity(0.38))
+
+            Button { simulateUnfold() } label: {
+                HStack {
+                    Spacer()
+                    Text("Unfold to reveal")
+                        .font(.headline)
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.title3.bold())
+                        .frame(width: 48, height: 48)
+                        .background(.white.opacity(0.14), in: Circle())
+                }
+                .padding(7)
+                .padding(.leading, 48)
+                .foregroundStyle(.white)
+                .background(
+                    LinearGradient(colors: [Color.peekPink.opacity(0.26), Color(hex: "526FFF").opacity(0.42)], startPoint: .leading, endPoint: .trailing),
+                    in: Capsule()
+                )
+                .overlay(Capsule().stroke(LinearGradient(colors: [Color.peekPink.opacity(0.75), .white.opacity(0.24), Color(hex: "7790FF")], startPoint: .leading, endPoint: .trailing)))
+                .shadow(color: Color(hex: "526FFF").opacity(ambientGlow ? 0.65 : 0.35), radius: ambientGlow ? 28 : 17, y: 8)
+            }
+            .buttonStyle(.plain)
+            .disabled(posture.hasRealHinge)
+            .accessibilityHint(posture.hasRealHinge ? "Unfold your device to continue" : "Simulates unfolding the device")
+            .padding(.horizontal, 34)
+            .padding(.top, 34)
+            .padding(.bottom, 34)
+        }
     }
 
     @ViewBuilder private var reactionPreview: some View {
@@ -80,14 +195,16 @@ struct RevealExperienceView: View {
     }
     private var instructionSubtitle: String { posture.hasRealHinge ? "The reveal follows your iPhone Duo" : "Duo hinge unavailable · use demo control" }
 
-    #if targetEnvironment(simulator)
-    private var demoControl: some View {
-        VStack(spacing: 7) {
-            Slider(value: Binding(get: { progress }, set: { posture.setDemoProgress($0) }), in: 0...1).tint(.peekPink)
-            Text("DEMO HINGE").font(.caption2.bold()).tracking(1.2).foregroundStyle(.secondary)
-        }.padding(14).background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 18))
+    private func simulateUnfold() {
+        guard !posture.hasRealHinge else { return }
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        Task {
+            for step in 1...20 {
+                try? await Task.sleep(for: .milliseconds(24))
+                posture.setDemoProgress(Double(step) / 20)
+            }
+        }
     }
-    #endif
 
     private var resultView: some View {
         VStack(spacing: 20) {
@@ -124,6 +241,56 @@ struct RevealExperienceView: View {
             appModel.capturedReactionURL = await capture.stopRecording(); appModel.incoming.isOpened = true
             withAnimation(.spring(response: 0.55, dampingFraction: 0.86)) { phase = .result }
         }
+    }
+}
+
+private struct NeonHorizon: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        path.move(to: CGPoint(x: -rect.width * 0.12, y: rect.height * 0.58))
+        path.addCurve(
+            to: CGPoint(x: rect.width * 1.08, y: rect.height * 0.2),
+            control1: CGPoint(x: rect.width * 0.36, y: rect.height * 0.43),
+            control2: CGPoint(x: rect.width * 0.78, y: rect.height * 0.56)
+        )
+        path.addLine(to: CGPoint(x: rect.width * 1.08, y: rect.height * 1.1))
+        path.addLine(to: CGPoint(x: -rect.width * 0.12, y: rect.height * 1.1))
+        path.closeSubpath()
+        return path
+    }
+}
+
+private struct RevealOrb: View {
+    let glowing: Bool
+
+    var body: some View {
+        ZStack {
+            Circle()
+                .fill(.ultraThinMaterial)
+                .overlay(Circle().fill(LinearGradient(colors: [Color(hex: "8B77FF").opacity(0.5), Color.peekPink.opacity(0.28), .white.opacity(0.12)], startPoint: .topLeading, endPoint: .bottomTrailing)))
+                .overlay(Circle().stroke(LinearGradient(colors: [.white.opacity(0.9), Color.peekPink, Color(hex: "778CFF")], startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: 2))
+                .shadow(color: Color.peekPink.opacity(glowing ? 0.72 : 0.4), radius: glowing ? 34 : 20)
+
+            Image(systemName: "person.crop.circle.fill")
+                .font(.system(size: 116, weight: .ultraLight))
+                .symbolRenderingMode(.palette)
+                .foregroundStyle(.white.opacity(0.74), Color(hex: "6D5ACA").opacity(0.6))
+
+            Image(systemName: "sparkle")
+                .font(.title)
+                .foregroundStyle(Color(hex: "FF8DCF"))
+                .offset(x: -96, y: -50)
+            Image(systemName: "sparkle")
+                .font(.title2)
+                .foregroundStyle(Color(hex: "8EA2FF"))
+                .offset(x: 100, y: 42)
+            Image(systemName: "wave.3.up")
+                .font(.title2.bold())
+                .foregroundStyle(Color(hex: "FF82C4"))
+                .rotationEffect(.degrees(-34))
+                .offset(x: 91, y: -89)
+        }
+        .scaleEffect(glowing ? 1.025 : 0.98)
     }
 }
 
