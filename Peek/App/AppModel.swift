@@ -8,4 +8,9 @@ final class AppModel {
     var selectedTab: Tab = .received
     var incoming = DemoData.incoming
     var capturedReactionURL: URL?
+    let subscriptions = SubscriptionService()
+
+    init() {
+        subscriptions.configure()
+    }
 }

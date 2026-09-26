@@ -6,6 +6,10 @@
 	objectVersion = 110;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		8958A15030684F96001B5AA1 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 8958A15230684F96001B5AA1 /* RevenueCat */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		8958A14030684F94001B5AA1 /* Peek.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Peek.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -22,6 +26,7 @@
 		8958A13D30684F94001B5AA1 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			files = (
+				8958A15030684F96001B5AA1 /* RevenueCat in Frameworks */,
 			);
 		};
 /* End PBXFrameworksBuildPhase section */
@@ -60,6 +65,9 @@
 				8958A14230684F94001B5AA1 /* Peek */,
 			);
 			name = Peek;
+			packageProductDependencies = (
+				8958A15230684F96001B5AA1 /* RevenueCat */,
+			);
 			productName = Peek;
 			productReference = 8958A14030684F94001B5AA1 /* Peek.app */;
 			productType = "com.apple.product-type.application";
@@ -88,6 +96,9 @@
 			);
 			mainGroup = 8958A13730684F94001B5AA1;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				8958A15130684F96001B5AA1 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 8958A14130684F94001B5AA1 /* Products */;
 			projectDirPath = "";
@@ -324,6 +335,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		8958A15130684F96001B5AA1 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/RevenueCat/purchases-ios-spm.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		8958A15230684F96001B5AA1 /* RevenueCat */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8958A15130684F96001B5AA1 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */;
+			productName = RevenueCat;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 8958A13830684F94001B5AA1 /* Project object */;
 	validationLevel = 1;
