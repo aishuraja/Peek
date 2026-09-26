@@ -21,6 +21,8 @@ struct SenderReactionsView: View {
                                         Text(reaction.friend.name).font(.caption.weight(.medium))
                                     }
                                 }.buttonStyle(.plain)
+                                    .padding(10)
+                                    .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 20))
                             }
                         }
                     }
@@ -37,7 +39,7 @@ private struct ReactionPlayerSheet: View {
         ZStack {
             Color.black.ignoresSafeArea()
             VStack(spacing: 15) {
-                ZStack { DemoCameraPreview(); Image(systemName: "play.fill").font(.title).padding(20).background(.ultraThinMaterial, in: Circle()) }
+                ZStack { DemoCameraPreview(); Image(systemName: "play.fill").font(.title).frame(width: 64, height: 64).glassEffect(.regular.interactive(), in: .circle) }
                     .frame(height: 250).clipShape(RoundedRectangle(cornerRadius: 30))
                 Text("\(friend.name)’s reaction").font(.title3.bold()); Text("Captured at the reveal").font(.subheadline).foregroundStyle(.secondary)
             }.padding(18)
