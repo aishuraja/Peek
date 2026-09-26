@@ -238,7 +238,7 @@ struct RevealExperienceView: View {
         UINotificationFeedbackGenerator().notificationOccurred(.success)
         Task {
             try? await Task.sleep(for: .seconds(1.6))
-            appModel.capturedReactionURL = await capture.stopRecording(); appModel.incoming.isOpened = true
+            appModel.capturedReactionURL = await capture.stopRecording(); appModel.markOpened(peek)
             withAnimation(.spring(response: 0.55, dampingFraction: 0.86)) { phase = .result }
         }
     }
