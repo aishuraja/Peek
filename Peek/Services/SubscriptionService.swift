@@ -9,7 +9,7 @@ final class SubscriptionService {
     enum Status: Equatable { case notConfigured, loading, ready, failed(String) }
 
     /// Entitlement identifier configured in the RevenueCat dashboard.
-    static let entitlementID = "pro"
+    static let entitlementID = "plus"
 
     private(set) var status: Status = .notConfigured
     private(set) var isPro = false
@@ -54,8 +54,10 @@ final class SubscriptionService {
             apply(try await info)
             offering = try await offerings.current
             status = .ready
+            print("[RevenueCat] ready · offering=\(offering?.identifier ?? "none") packages=\(offering?.availablePackages.map(\.identifier) ?? []) isPlus=\(isPro)")
         } catch {
             status = .failed(error.localizedDescription)
+            print("[RevenueCat] refresh failed: \(error.localizedDescription)")
         }
     }
 
