@@ -25,7 +25,7 @@ struct InboxView: View {
             .toolbar(.hidden, for: .navigationBar)
             .navigationDestination(for: Peek.self) { peek in
                 if model.selectedTab == .received {
-                    IncomingPeekView(peek: peek, appModel: model)
+                    RevealExperienceView(peek: peek, appModel: model)
                 } else {
                     SenderReactionsView(peek: DemoData.sent)
                 }
