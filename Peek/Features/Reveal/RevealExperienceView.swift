@@ -24,7 +24,7 @@ struct RevealExperienceView: View {
             if new == .partiallyOpen && old == .closed { UIImpactFeedbackGenerator(style: .soft).impactOccurred() }
             if new == .fullyOpen { finishReveal() }
         }
-        .modifier(HingeObserver(posture: posture))
+        .duoHingeObserver(posture: posture)
         .preferredColorScheme(.dark)
     }
 
@@ -46,7 +46,7 @@ struct RevealExperienceView: View {
                     .animation(.interactiveSpring(response: 0.42, dampingFraction: 0.86), value: progress)
                 VStack {
                     HStack {
-                        Button { dismiss() } label: { Image(systemName: "xmark").frame(width: 42, height: 42).background(.ultraThinMaterial, in: Circle()) }
+                        Button { dismiss() } label: { Image(systemName: "xmark").frame(width: 42, height: 42) }.peekGlassButton()
                         Spacer()
                         Label(capture.isRecording ? "REC" : "READY", systemImage: "circle.fill").font(.caption.bold())
                             .foregroundStyle(capture.isRecording ? Color.peekPink : .secondary).padding(.horizontal, 13).padding(.vertical, 9).background(.ultraThinMaterial, in: Capsule())
@@ -92,7 +92,7 @@ struct RevealExperienceView: View {
     private var resultView: some View {
         VStack(spacing: 20) {
             HStack {
-                Button { dismiss() } label: { Image(systemName: "xmark").frame(width: 42, height: 42).background(.white.opacity(0.1), in: Circle()) }
+                Button { dismiss() } label: { Image(systemName: "xmark").frame(width: 42, height: 42) }.peekGlassButton()
                 Spacer(); Text("Peek revealed").font(.subheadline.weight(.semibold)).foregroundStyle(.secondary); Spacer(); Color.clear.frame(width: 42, height: 42)
             }.padding(.horizontal, 20)
             ZStack(alignment: .bottomTrailing) {
@@ -102,8 +102,10 @@ struct RevealExperienceView: View {
             }.padding(.horizontal, 16)
             VStack(spacing: 6) { Text("Reaction sent 💗").font(.title2.bold()); Text("Aish gets the real moment, not an emoji.").font(.subheadline).foregroundStyle(.secondary) }
             HStack(spacing: 12) {
-                Button { withAnimation(.bouncy) { showReplay.toggle() } } label: { Label("Replay reaction", systemImage: "play.fill").frame(maxWidth: .infinity).padding(.vertical, 14).background(.white.opacity(0.1), in: Capsule()) }
-                Button { dismiss() } label: { Text("Done").frame(maxWidth: .infinity).padding(.vertical, 14).background(Color.peekPink, in: Capsule()) }
+                Button { withAnimation(.bouncy) { showReplay.toggle() } } label: { Label("Replay reaction", systemImage: "play.fill").frame(maxWidth: .infinity).padding(.vertical, 14) }
+                    .buttonStyle(.glass)
+                Button { dismiss() } label: { Text("Done").frame(maxWidth: .infinity).padding(.vertical, 14) }
+                    .buttonStyle(.glassProminent).tint(.peekPink)
             }.font(.subheadline.bold()).foregroundStyle(.white).padding(.horizontal, 20)
             Spacer(minLength: 10)
         }.padding(.top, 8).transition(.opacity.combined(with: .scale(scale: 0.97)))
@@ -125,9 +127,24 @@ struct RevealExperienceView: View {
     }
 }
 
+@available(iOS 27.1, *)
 private struct HingeObserver: ViewModifier {
     let posture: DuoPostureService
+
     func body(content: Content) -> some View {
-        content.onHingeChange { _, context in posture.consume(context) }
+        content.onHingeChange { _, context in
+            posture.consume(context)
+        }
+    }
+}
+
+private extension View {
+    @ViewBuilder
+    func duoHingeObserver(posture: DuoPostureService) -> some View {
+        if #available(iOS 27.1, *) {
+            self.modifier(HingeObserver(posture: posture))
+        } else {
+            self
+        }
     }
 }

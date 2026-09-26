@@ -44,8 +44,22 @@ struct PrimaryButton: View {
         Button(action: action) {
             HStack(spacing: 9) { Text(title); if let icon { Image(systemName: icon) } }
                 .font(.headline).frame(maxWidth: .infinity).padding(.vertical, 17)
-                .background(Color.peekPink, in: Capsule()).foregroundStyle(.white)
-                .shadow(color: Color.peekPink.opacity(0.25), radius: 20, y: 8)
-        }.buttonStyle(.plain)
+        }
+        .buttonStyle(.glassProminent)
+        .tint(.peekPink)
+        .foregroundStyle(.white)
+    }
+}
+
+extension View {
+    /// The shared treatment for compact controls floating above photos and dark surfaces.
+    func peekGlassButton() -> some View {
+        buttonStyle(.glass)
+            .foregroundStyle(.white)
+    }
+
+    /// A tappable glass surface with the soft, continuous geometry used across iOS.
+    func peekGlassSurface(cornerRadius: CGFloat = 24) -> some View {
+        glassEffect(.regular.interactive(), in: .rect(cornerRadius: cornerRadius))
     }
 }
