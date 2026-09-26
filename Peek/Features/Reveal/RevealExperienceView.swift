@@ -217,11 +217,15 @@ struct RevealExperienceView: View {
                 reactionPreview.frame(width: 112, height: 150).clipShape(RoundedRectangle(cornerRadius: 25, style: .continuous))
                     .overlay(RoundedRectangle(cornerRadius: 25).stroke(.white, lineWidth: 3)).shadow(color: .black.opacity(0.5), radius: 15).padding(15).scaleEffect(showReplay ? 1.04 : 1)
             }.padding(.horizontal, 16)
-            VStack(spacing: 6) { Text("Reaction sent 💗").font(.title2.bold()); Text("Aish gets the real moment, not an emoji.").font(.subheadline).foregroundStyle(.secondary) }
+            VStack(spacing: 6) { Text("Reaction sent 💗").font(.title2.bold()); Text("\(peek.sender.name) gets the real moment, not an emoji.").font(.subheadline).foregroundStyle(.secondary) }
             HStack(spacing: 12) {
                 Button { withAnimation(.bouncy) { showReplay.toggle() } } label: { Label("Replay reaction", systemImage: "play.fill").frame(maxWidth: .infinity).padding(.vertical, 14) }
                     .buttonStyle(.glass)
-                Button { dismiss() } label: { Text("Done").frame(maxWidth: .infinity).padding(.vertical, 14) }
+                Button { dismiss() } label: {
+                    Text(appModel.hasPeek(after: peek) ? "Next Peek" : "Close")
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                }
                     .buttonStyle(.glassProminent).tint(.peekPink)
             }.font(.subheadline.bold()).foregroundStyle(.white).padding(.horizontal, 20)
             Spacer(minLength: 10)
@@ -238,7 +242,7 @@ struct RevealExperienceView: View {
         UINotificationFeedbackGenerator().notificationOccurred(.success)
         Task {
             try? await Task.sleep(for: .seconds(1.6))
-            appModel.capturedReactionURL = await capture.stopRecording(); appModel.incoming.isOpened = true
+            appModel.capturedReactionURL = await capture.stopRecording(); appModel.markOpened(peek)
             withAnimation(.spring(response: 0.55, dampingFraction: 0.86)) { phase = .result }
         }
     }

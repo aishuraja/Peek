@@ -96,37 +96,49 @@ struct InboxView: View {
                 .shadow(color: Color.peekPink.opacity(glow ? 0.42 : 0.2), radius: glow ? 34 : 20, y: 12)
 
             VStack(spacing: 9) {
-                Text("Aish sent you a Peek")
+                Text(heroTitle)
                     .font(.system(size: 25, weight: .bold, design: .rounded))
                     .multilineTextAlignment(.center)
-                Text("A little moment is waiting for you")
+                Text(heroSubtitle)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
             }
 
-            Button { openReceived() } label: {
-                HStack(spacing: 10) {
-                    Text("Tap to reveal")
-                    Image(systemName: "sparkles")
-                        .font(.subheadline)
+            if model.nextIncomingPeek != nil {
+                Button { openReceived() } label: {
+                    HStack(spacing: 10) {
+                        Text("Tap to reveal")
+                        Image(systemName: "sparkles")
+                            .font(.subheadline)
+                    }
+                    .font(.headline)
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 17)
                 }
-                .font(.headline)
-                .foregroundStyle(.white)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 17)
+                .buttonStyle(.plain)
+                .background(
+                    LinearGradient(
+                        colors: [Color.white.opacity(0.16), Color.white.opacity(0.07)],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    ),
+                    in: Capsule()
+                )
+                .overlay(Capsule().stroke(Color.white.opacity(0.2), lineWidth: 1))
+                .shadow(color: .black.opacity(0.5), radius: 18, y: 12)
+                .padding(.horizontal, 26)
+            } else {
+                Label("Inbox zero — nicely done!", systemImage: "party.popper.fill")
+                    .font(.headline)
+                    .foregroundStyle(Color.peekPink)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 17)
+                    .background(Color.white.opacity(0.07), in: Capsule())
+                    .overlay(Capsule().stroke(Color.white.opacity(0.12), lineWidth: 1))
+                    .padding(.horizontal, 26)
             }
-            .buttonStyle(.plain)
-            .background(
-                LinearGradient(
-                    colors: [Color.white.opacity(0.16), Color.white.opacity(0.07)],
-                    startPoint: .top,
-                    endPoint: .bottom
-                ),
-                in: Capsule()
-            )
-            .overlay(Capsule().stroke(Color.white.opacity(0.2), lineWidth: 1))
-            .shadow(color: .black.opacity(0.5), radius: 18, y: 12)
-            .padding(.horizontal, 26)
         }
         .padding(.vertical, 34)
         .padding(.horizontal, 12)
@@ -138,6 +150,19 @@ struct InboxView: View {
                     lineWidth: 1
                 )
         )
+    }
+
+    private var heroTitle: String {
+        if let peek = model.nextIncomingPeek {
+            return "\(peek.sender.name) sent you a Peek"
+        }
+        return "Ohhh, you caught them all! 🎉"
+    }
+
+    private var heroSubtitle: String {
+        model.nextIncomingPeek == nil
+            ? "Every Peek is complete. Your curiosity deserves a tiny victory dance."
+            : "A little moment is waiting for you"
     }
 
     private var recentPeeks: some View {
@@ -163,7 +188,8 @@ struct InboxView: View {
 
     private func openReceived() {
         model.selectedTab = .received
-        path.append(model.incoming)
+        guard let nextPeek = model.nextIncomingPeek else { return }
+        path.append(nextPeek)
     }
 }
 
