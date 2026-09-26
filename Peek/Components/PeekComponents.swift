@@ -27,6 +27,15 @@ struct DemoPhoto: View {
                 LinearGradient(colors: [.orange.opacity(0.9), .purple.opacity(0.75), .indigo], startPoint: .top, endPoint: .bottom)
                 Image(systemName: "mountain.2.fill").font(.system(size: 150)).foregroundStyle(.black.opacity(0.34)).offset(y: 85)
                 Image(systemName: "sun.max.fill").font(.system(size: 54)).foregroundStyle(.yellow.opacity(0.75)).offset(x: 82, y: -105)
+            } else if name == "coffee" {
+                LinearGradient(colors: [Color(hex: "E6B980"), Color(hex: "8B5E3C")], startPoint: .topLeading, endPoint: .bottomTrailing)
+                Image(systemName: "cup.and.saucer.fill").font(.system(size: 150)).foregroundStyle(.white.opacity(0.86)).shadow(color: .black.opacity(0.3), radius: 20, y: 14)
+            } else if name == "cat" {
+                LinearGradient(colors: [Color(hex: "725CAD"), Color(hex: "24193D")], startPoint: .top, endPoint: .bottom)
+                Image(systemName: "cat.fill").font(.system(size: 180)).foregroundStyle(Color(hex: "F4B860")).shadow(color: .black.opacity(0.35), radius: 20, y: 14)
+            } else if name == "music" {
+                LinearGradient(colors: [Color(hex: "FF7597"), Color(hex: "526BFF")], startPoint: .topLeading, endPoint: .bottomTrailing)
+                Image(systemName: "headphones").font(.system(size: 170, weight: .bold)).foregroundStyle(.white.opacity(0.88)).shadow(color: .black.opacity(0.3), radius: 20, y: 14)
             } else {
                 LinearGradient(colors: [Color(red: 0.18, green: 0.16, blue: 0.12), Color(red: 0.65, green: 0.48, blue: 0.28)], startPoint: .top, endPoint: .bottom)
                 Image(systemName: "dog.fill").font(.system(size: 190)).foregroundStyle(Color(red: 0.95, green: 0.78, blue: 0.52)).shadow(color: .black.opacity(0.35), radius: 24, y: 16)
